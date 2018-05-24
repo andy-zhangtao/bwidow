@@ -24,7 +24,6 @@ func init() {
 }
 
 type BWDriver interface {
-	//Check 驱动自检
 	Check() error
 	DriverInit() error
 	Map(u interface{}, name string)

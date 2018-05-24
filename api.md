@@ -117,7 +117,6 @@ Update 更新命中的所有数据. uPtr 供定位记录的数据 field 用于�
 
 ```go
 type BWDriver interface {
-	//Check 驱动自检
 	Check() error
 	DriverInit() error
 	Map(u interface{}, name string)
