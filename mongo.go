@@ -38,19 +38,40 @@ func (this *BWMongo) setDB() {
 	this.db = this.session.Clone().DB(os.Getenv(BW_MONGO_DB))
 }
 
-func (this *BWMongo) First(u interface{}) {
+func (this *BWMongo) First(u interface{}) (err error) {
 	this.setDB()
-	this.db.C(this.tableMap[getTypeName(u)]).Find(nil).One(u)
-	return
+	defer this.db.Session.Close()
+
+	return this.db.C(this.tableMap[getTypeName(u)]).Find(nil).One(u)
 }
 
-func (this *BWMongo) FindOne(u interface{}) {
+func (this *BWMongo) FindOne(u interface{}) (err error) {
 	this.setDB()
+	defer this.db.Session.Close()
 
 	m := zReflect.ReflectStructInfo(u)
-	this.db.C(this.tableMap[getTypeName(u)]).Find(bson.M(m)).One(u)
-	return
+
+	return this.db.C(this.tableMap[getTypeName(u)]).Find(bson.M(m)).One(u)
 }
+
+func (this *BWMongo) FindAll(u interface{}, a interface{}) (err error) {
+	this.setDB()
+	defer this.db.Session.Close()
+
+	m := zReflect.ReflectStructInfo(u)
+
+	return this.db.C(this.tableMap[getTypeName(u)]).Find(bson.M(m)).All(a)
+}
+
+func (this *BWMongo) FindAllWithSort(u interface{}, a interface{}, sortField []string) (err error) {
+	this.setDB()
+	defer this.db.Session.Close()
+
+	m := zReflect.ReflectStructInfo(u)
+
+	return this.db.C(this.tableMap[getTypeName(u)]).Find(bson.M(m)).Sort(sortField...).All(a)
+}
+
 func (this *BWMongo) DriverInit() (err error) {
 	if err = this.Check(); err != nil {
 		return

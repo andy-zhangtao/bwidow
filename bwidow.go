@@ -19,11 +19,14 @@ func init() {
 }
 
 type BWDriver interface {
+	//Check 驱动自检
 	Check() error
 	DriverInit() error
 	Map(u interface{}, name string)
-	First(u interface{})
-	FindOne(u interface{})
+	First(u interface{}) error
+	FindOne(u interface{}) error
+	FindAll(u interface{}, a interface{}) error
+	FindAllWithSort(u interface{}, a interface{}, sortField []string) error
 }
 
 type BW struct {
@@ -54,14 +57,39 @@ func (this *BW) Driver(driver int) (err error) {
 	return
 }
 
-func (this *BW) First(u interface{}) {
-	this.client[this.driver].First(u)
+//First 查询与u绑定的表中的首条记录
+//u 数据结构体指针
+func (this *BW) First(u interface{}) (err error) {
+	return this.client[this.driver].First(u)
 }
 
+//Map 将u与数据表进行绑定
+//u 数据结构体
+//name 数据表名
 func (this *BW) Map(u interface{}, name string) {
 	this.client[this.driver].Map(u, name)
 }
 
-func (this *BW) FindOne(u interface{}) {
-	this.client[this.driver].FindOne(u)
+//FindOne 通过u的字段查询数据
+//BW会解析u的字段,然后将所有非空字段作为查询条件进行查询，同时将查询到的数据赋值给u
+//u必须为指针
+func (this *BW) FindOne(u interface{}) (err error) {
+	return this.client[this.driver].FindOne(u)
+}
+
+//FindAll 通过u的字段查询所有数据
+//BW会解析u的字段,然后将所有非空字段作为查询条件进行查询，同时将查询到的数据赋值给a
+//u必须为指针
+//a必须为array/slice类型的指针
+func (this *BW) FindAll(u interface{}, a interface{}) (err error) {
+	return this.client[this.driver].FindAll(u, a)
+}
+
+//FindAllWithSort 通过u的字段查询所有数据并且按照给定的条件进行排序
+//BW会解析u的字段,然后将所有非空字段作为查询条件进行查询，同时将查询到的数据赋值给a
+//u 必须为指针
+//a 必须为array/slice类型的指针
+//sortField 需要排序的字段数组
+func (this *BW) FindAllWithSort(u interface{}, a interface{}, sortField []string) (err error) {
+	return this.client[this.driver].FindAllWithSort(u, a, sortField)
 }
