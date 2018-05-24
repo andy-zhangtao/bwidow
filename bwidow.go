@@ -28,12 +28,13 @@ type BWDriver interface {
 	Check() error
 	DriverInit() error
 	Map(u interface{}, name string)
-	First(u interface{}) error
-	FindOne(u interface{}) error
-	FindAll(u interface{}, a interface{}) error
-	FindAllWithSort(u interface{}, a interface{}, sortField []string) error
+	First(uPtr interface{}) error
+	FindOne(uPtr interface{}) error
+	FindAll(uPtr interface{}, aPtr interface{}) error
+	FindAllWithSort(uPtr interface{}, aArray interface{}, sortField []string) error
 	Save(u interface{}) error
-	SaveAll(u []interface{}) error
+	SaveAll(uArray []interface{}) error
+	Update(uPtr interface{}, field []string) error
 }
 
 type BW struct {
@@ -100,8 +101,8 @@ func (this *BW) FindAll(uPtr interface{}, aPtr interface{}) (err error) {
 //u 必须为指针
 //a 必须为array/slice类型的指针
 //sortField 需要排序的字段数组
-func (this *BW) FindAllWithSort(uPtr interface{}, a interface{}, sortField []string) (err error) {
-	return this.client[this.driver].FindAllWithSort(uPtr, a, sortField)
+func (this *BW) FindAllWithSort(uPtr interface{}, aArray interface{}, sortField []string) (err error) {
+	return this.client[this.driver].FindAllWithSort(uPtr, aArray, sortField)
 }
 
 //Save 插入单条数据
@@ -121,4 +122,11 @@ func (this *BW) SaveAll(uArray interface{}) (err error) {
 	}
 
 	return this.client[this.driver].SaveAll(uu)
+}
+
+//Update 更新命中的所有数据.
+//uPtr 供定位记录的数据
+//field 用于筛选的字段
+func (this *BW) Update(uPtr interface{}, field []string) (err error) {
+	return this.client[this.driver].Update(uPtr, field)
 }

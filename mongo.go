@@ -89,6 +89,22 @@ func (this *BWMongo) SaveAll(u []interface{}) (err error) {
 	return
 }
 
+func (this *BWMongo) Update(uPtr interface{}, field []string) (err error) {
+	this.setDB()
+	defer this.db.Session.Close()
+
+	m := zReflect.ReflectStructInfo(uPtr)
+
+	nm := make(map[string]interface{})
+
+	for _, f := range field {
+		nm[f] = m[f]
+	}
+
+	_, err = this.db.C(this.tableMap[getTypeName(uPtr)]).UpdateAll(bson.M(nm), bson.M{"$set": bson.M(m)})
+	return
+}
+
 func (this *BWMongo) DriverInit() (err error) {
 	if err = this.Check(); err != nil {
 		return

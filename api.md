@@ -58,7 +58,7 @@ a必须为array/slice类型的指针
 #### func (*BW) FindAllWithSort
 
 ```go
-func (this *BW) FindAllWithSort(uPtr interface{}, a interface{}, sortField []string) (err error)
+func (this *BW) FindAllWithSort(uPtr interface{}, aArray interface{}, sortField []string) (err error)
 ```
 FindAllWithSort 通过u的字段查询所有数据并且按照给定的条件进行排序
 BW会解析u的字段,然后将所有非空字段作为查询条件进行查询，同时将查询到的数据赋值给a u 必须为指针 a 必须为array/slice类型的指针
@@ -99,6 +99,13 @@ func (this *BW) SaveAll(uArray interface{}) (err error)
 ```
 SaveAll 插入一批次的数据 支持数组内存在不同数据类型 u 为数组
 
+#### func (*BW) Update
+
+```go
+func (this *BW) Update(uPtr interface{}, field []string) (err error)
+```
+Update 更新命中的所有数据. uPtr 供定位记录的数据 field 用于筛选的字段
+
 #### type BWDriver
 
 ```go
@@ -107,12 +114,13 @@ type BWDriver interface {
 	Check() error
 	DriverInit() error
 	Map(u interface{}, name string)
-	First(u interface{}) error
-	FindOne(u interface{}) error
-	FindAll(u interface{}, a interface{}) error
-	FindAllWithSort(u interface{}, a interface{}, sortField []string) error
+	First(uPtr interface{}) error
+	FindOne(uPtr interface{}) error
+	FindAll(uPtr interface{}, aPtr interface{}) error
+	FindAllWithSort(uPtr interface{}, aArray interface{}, sortField []string) error
 	Save(u interface{}) error
-	SaveAll(u []interface{}) error
+	SaveAll(uArray []interface{}) error
+	Update(uPtr interface{}, field []string) error
 }
 ```
 
@@ -177,4 +185,10 @@ func (this *BWMongo) Save(u interface{}) (err error)
 
 ```go
 func (this *BWMongo) SaveAll(u []interface{}) (err error)
+```
+
+#### func (*BWMongo) Update
+
+```go
+func (this *BWMongo) Update(uPtr interface{}, field []string) (err error)
 ```
