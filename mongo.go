@@ -6,18 +6,28 @@
 package bwidow
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"time"
 
 	"github.com/andy-zhangtao/gogather/zReflect"
+	"github.com/pelletier/go-toml"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 //Write by zhangtao<ztao8607@gmail.com> . In 2018/5/23.
+
+type BWMongoConf struct {
+	Endpoint string
+	DB       string
+	User     string
+	Password string
+}
 
 type BWMongo struct {
 	session  *mgo.Session
@@ -129,17 +139,57 @@ func (this *BWMongo) DriverInit() (err error) {
 
 	user := os.Getenv(BW_MONGO_USER)
 	passwd := os.Getenv(BW_MONGO_PASSWD)
+	db := os.Getenv(BW_MONGO_DB)
+	endpoint := os.Getenv(BW_MONGO_ENDPOINT)
+	var conf BWMongoConf
+	if endpoint == "" {
+		useToml := true
+		//	读取toml
+		data, err := ioutil.ReadFile("bwidow_mongo.toml")
+		if err != nil || len(data) == 0 {
+			useToml = false
+			//尝试json
+			data, err = ioutil.ReadFile("bwidow_mongo.json")
+			if err != nil || len(data) == 0 {
+				return errors.New(fmt.Sprintf("Parse Configure Error %s", err.Error()))
+			}
+		}
+
+		if useToml {
+			err = toml.Unmarshal(data, &conf)
+			if err != nil {
+				return err
+			}
+		} else {
+			err = json.Unmarshal(data, &conf)
+			if err != nil {
+				return err
+			}
+		}
+
+		endpoint = conf.Endpoint
+	}
+
+	if user == "" {
+		user = conf.User
+	}
+	if passwd == "" {
+		passwd = conf.Password
+	}
+	if db == "" {
+		db = conf.DB
+	}
 
 	var session *mgo.Session
 	if user == "" {
-		session, err = mgo.Dial(os.Getenv(BW_MONGO_ENDPOINT))
+		session, err = mgo.Dial(endpoint)
 		if err != nil {
 			return
 		}
 	} else {
 		dialInfo := &mgo.DialInfo{
-			Addrs:    []string{os.Getenv(BW_MONGO_ENDPOINT)},
-			Database: os.Getenv(BW_MONGO_DB),
+			Addrs:    []string{endpoint},
+			Database: db,
 			Username: user,
 			Password: passwd,
 			Timeout:  10 * time.Second,
@@ -163,20 +213,29 @@ func (this *BWMongo) DriverInit() (err error) {
 func (this *BWMongo) Check() (err error) {
 
 	if os.Getenv(BW_MONGO_ENDPOINT) == "" {
-		return errors.New(fmt.Sprintf("[%s] Empty!", BW_MONGO_ENDPOINT))
+		// 环境变量不存在, 检查bwidow_mongo.toml文件
+		if _, err := os.Stat("bwidow_mongo.toml"); os.IsNotExist(err) {
+			//	toml 配置文件不存在,检查bwidow_mongo.json文件
+			if _, err := os.Stat("bwidow_mongo.json"); os.IsNotExist(err) {
+				return errors.New(fmt.Sprintf("Can not find Mongo configure. Env[%s]/Toml/Json are all lost!", BW_MONGO_ENDPOINT))
+			}
+		}
+
+		return nil
 	}
 
 	if os.Getenv(BW_MONGO_DB) == "" {
 		return errors.New(fmt.Sprintf("[%s] Empty!", BW_MONGO_DB))
 	}
-	return
+
+	return nil
 }
 
 func (this *BWMongo) checkIndex(uPtr interface{}) (err error) {
 	this.setDB()
 	defer this.db.Session.Close()
 
-	m := zReflect.ReflectStructInfoWithTag(uPtr,true, "bw")
+	m := zReflect.ReflectStructInfoWithTag(uPtr, true, "bw")
 
 	fmt.Println(m)
 	var key []string
@@ -184,5 +243,29 @@ func (this *BWMongo) checkIndex(uPtr interface{}) (err error) {
 		key = append(key, k)
 	}
 
-	return this.db.C(this.tableMap[getTypeName(uPtr)]).EnsureIndexKey(key...)
+	index, _ := this.db.C(this.tableMap[getTypeName(uPtr)]).Indexes()
+
+	isExist := false
+	for _, idx := range index {
+		if len(m) == len(idx.Key) {
+			i := 1
+			for k, _ := range m {
+				for _, n := range idx.Key {
+					if k == n {
+						i++
+					}
+				}
+			}
+			if len(m) == i {
+				isExist = true
+				break
+			}
+		}
+	}
+
+	if !isExist {
+		err = this.db.C(this.tableMap[getTypeName(uPtr)]).EnsureIndexKey(key...)
+	}
+
+	return
 }

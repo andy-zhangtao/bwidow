@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/andy-zhangtao/gogather"
   packages = ["zReflect"]
-  revision = "2a97753ffb274c8d8f34d7bb0ce33b1871bf3745"
+  revision = "80e550f11f4c52518ccfc55b427927144d8b4a29"
 
 [[projects]]
   branch = "v2"

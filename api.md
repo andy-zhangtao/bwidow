@@ -389,3 +389,14 @@ func (this *BWMongo) DriverInit() (err error)
 ```go
 func (this *BWMongo) Map(u interface{}, name string)
 ```
+
+#### type BWMongoConf
+
+```go
+type BWMongoConf struct {
+	Endpoint string
+	DB       string
+	User     string
+	Password string
+}
+```
