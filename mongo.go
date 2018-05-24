@@ -237,7 +237,6 @@ func (this *BWMongo) checkIndex(uPtr interface{}) (err error) {
 
 	m := zReflect.ReflectStructInfoWithTag(uPtr, true, "bw")
 
-	fmt.Println(m)
 	var key []string
 	for k, _ := range m {
 		key = append(key, k)
@@ -264,7 +263,14 @@ func (this *BWMongo) checkIndex(uPtr interface{}) (err error) {
 	}
 
 	if !isExist {
-		err = this.db.C(this.tableMap[getTypeName(uPtr)]).EnsureIndexKey(key...)
+		index := mgo.Index{
+			Key:        key,
+			Unique:     true,
+			DropDups:   true,
+			Background: true,
+			Sparse:     true,
+		}
+		err = this.db.C(this.tableMap[getTypeName(uPtr)]).EnsureIndex(index)
 	}
 
 	return
