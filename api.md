@@ -67,6 +67,49 @@ func GetWidow() *BW
 ```
 GetWidow 获取当前全局Widow. 如果没有则创建
 
+#### func (*BW) CheckIndex
+
+```go
+func (this *BW) CheckIndex(uPtr interface{}) (err error)
+```
+CheckIndex 检查索引是否存在,如果不存在则创建索引. 再调用之前,需要确定Struct中已经添加bw注解
+
+##### Example
+
+```go
+
+    type User struct {
+    	ID               bson.ObjectId `json:"_id" bson:"_id"`
+    	Name             string        `json:"name" bson:"name" bw:"name"`
+    	Password         string        `json:"password" bson:"password" bw:"password"`
+    	Projects         Project       `json:"projects" bson:"projects"`
+    	Statis           UserStatis    `json:"statis" bson:"statis"`
+    	CurrentAuthority string        `json:"currentAuthority" bson:"currentauthority"`
+    	Resource struct {
+    		Cpu    float64 `json:"cpu" bson:"cpu"`
+    		Memory float64 `json:"memory" bson:"memory"`
+    	} `json:"resource" bson:"resource"`
+    }
+
+    type UserStatis struct {
+    	BuildSucc    int `json:"build_succ" bson:"buildsucc"`
+    	BuildFailed  int `json:"build_failed" bson:"buildfailed"`
+    	DeploySucc   int `json:"deploy_succ" bson:"deploysucc"`
+    	DeployFailed int `json:"deploy_failed" bson:"deployfailed"`
+    }
+
+    type Project struct {
+    	ID []string `json:"id" bson:"id"`
+    }
+
+    err = bw.CheckIndex(User{})
+    if err != nil{
+    	logrus.Errorln(err)
+    }
+    return
+
+```
+
 #### func (*BW) Delete
 
 ```go

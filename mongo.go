@@ -171,3 +171,18 @@ func (this *BWMongo) Check() (err error) {
 	}
 	return
 }
+
+func (this *BWMongo) checkIndex(uPtr interface{}) (err error) {
+	this.setDB()
+	defer this.db.Session.Close()
+
+	m := zReflect.ReflectStructInfoWithTag(uPtr,true, "bw")
+
+	fmt.Println(m)
+	var key []string
+	for k, _ := range m {
+		key = append(key, k)
+	}
+
+	return this.db.C(this.tableMap[getTypeName(uPtr)]).EnsureIndexKey(key...)
+}

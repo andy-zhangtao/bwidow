@@ -54,6 +54,7 @@ type BWDriver interface {
 	Check() error
 	DriverInit() error
 	Map(u interface{}, name string)
+	checkIndex(u interface{}) error
 	first(uPtr interface{}) error
 	findOne(uPtr interface{}) error
 	findAll(uPtr interface{}, aPtr interface{}) error
@@ -326,4 +327,47 @@ func (this *BW) Update(uPtr interface{}, field []string) (num int, err error) {
 */
 func (this *BW) Delete(uPtr interface{}, field []string) (num int, err error) {
 	return this.client[this.driver].delete(uPtr, field)
+}
+
+//CheckIndex 检查索引是否存在,如果不存在则创建索引.
+//再调用之前,需要确定Struct中已经添加bw注解
+/*
+
+##### Example
+
+```go
+	type User struct {
+		ID               bson.ObjectId `json:"_id" bson:"_id"`
+		Name             string        `json:"name" bson:"name" bw:"name"`
+		Password         string        `json:"password" bson:"password" bw:"password"`
+		Projects         Project       `json:"projects" bson:"projects"`
+		Statis           UserStatis    `json:"statis" bson:"statis"`
+		CurrentAuthority string        `json:"currentAuthority" bson:"currentauthority"`
+		Resource struct {
+			Cpu    float64 `json:"cpu" bson:"cpu"`
+			Memory float64 `json:"memory" bson:"memory"`
+		} `json:"resource" bson:"resource"`
+	}
+
+	type UserStatis struct {
+		BuildSucc    int `json:"build_succ" bson:"buildsucc"`
+		BuildFailed  int `json:"build_failed" bson:"buildfailed"`
+		DeploySucc   int `json:"deploy_succ" bson:"deploysucc"`
+		DeployFailed int `json:"deploy_failed" bson:"deployfailed"`
+	}
+
+	type Project struct {
+		ID []string `json:"id" bson:"id"`
+	}
+
+	err = bw.CheckIndex(User{})
+	if err != nil{
+		logrus.Errorln(err)
+	}
+	return
+```
+
+*/
+func (this *BW) CheckIndex(uPtr interface{}) (err error) {
+	return this.client[this.driver].checkIndex(uPtr)
 }
