@@ -72,6 +72,23 @@ func (this *BWMongo) FindAllWithSort(u interface{}, a interface{}, sortField []s
 	return this.db.C(this.tableMap[getTypeName(u)]).Find(bson.M(m)).Sort(sortField...).All(a)
 }
 
+func (this *BWMongo) Save(u interface{}) (err error) {
+	this.setDB()
+	defer this.db.Session.Close()
+	return this.db.C(this.tableMap[getTypeName(u)]).Insert(u)
+}
+
+func (this *BWMongo) SaveAll(u []interface{}) (err error) {
+	typeName := reflect.TypeOf(u[0]).Name()
+	this.setDB()
+	defer this.db.Session.Close()
+
+	bulk := this.db.C(this.tableMap[typeName]).Bulk()
+	bulk.Insert(u...)
+	_, err = bulk.Run()
+	return
+}
+
 func (this *BWMongo) DriverInit() (err error) {
 	if err = this.Check(); err != nil {
 		return
