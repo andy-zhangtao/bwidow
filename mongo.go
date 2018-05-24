@@ -38,14 +38,14 @@ func (this *BWMongo) setDB() {
 	this.db = this.session.Clone().DB(os.Getenv(BW_MONGO_DB))
 }
 
-func (this *BWMongo) First(u interface{}) (err error) {
+func (this *BWMongo) first(u interface{}) (err error) {
 	this.setDB()
 	defer this.db.Session.Close()
 
 	return this.db.C(this.tableMap[getTypeName(u)]).Find(nil).One(u)
 }
 
-func (this *BWMongo) FindOne(u interface{}) (err error) {
+func (this *BWMongo) findOne(u interface{}) (err error) {
 	this.setDB()
 	defer this.db.Session.Close()
 
@@ -54,7 +54,7 @@ func (this *BWMongo) FindOne(u interface{}) (err error) {
 	return this.db.C(this.tableMap[getTypeName(u)]).Find(bson.M(m)).One(u)
 }
 
-func (this *BWMongo) FindAll(u interface{}, a interface{}) (err error) {
+func (this *BWMongo) findAll(u interface{}, a interface{}) (err error) {
 	this.setDB()
 	defer this.db.Session.Close()
 
@@ -63,7 +63,7 @@ func (this *BWMongo) FindAll(u interface{}, a interface{}) (err error) {
 	return this.db.C(this.tableMap[getTypeName(u)]).Find(bson.M(m)).All(a)
 }
 
-func (this *BWMongo) FindAllWithSort(u interface{}, a interface{}, sortField []string) (err error) {
+func (this *BWMongo) findAllWithSort(u interface{}, a interface{}, sortField []string) (err error) {
 	this.setDB()
 	defer this.db.Session.Close()
 
@@ -72,13 +72,13 @@ func (this *BWMongo) FindAllWithSort(u interface{}, a interface{}, sortField []s
 	return this.db.C(this.tableMap[getTypeName(u)]).Find(bson.M(m)).Sort(sortField...).All(a)
 }
 
-func (this *BWMongo) Save(u interface{}) (err error) {
+func (this *BWMongo) save(u interface{}) (err error) {
 	this.setDB()
 	defer this.db.Session.Close()
 	return this.db.C(this.tableMap[getTypeName(u)]).Insert(u)
 }
 
-func (this *BWMongo) SaveAll(u []interface{}) (err error) {
+func (this *BWMongo) saveAll(u []interface{}) (err error) {
 	typeName := reflect.TypeOf(u[0]).Name()
 	this.setDB()
 	defer this.db.Session.Close()
@@ -89,7 +89,7 @@ func (this *BWMongo) SaveAll(u []interface{}) (err error) {
 	return
 }
 
-func (this *BWMongo) Update(uPtr interface{}, field []string) (err error) {
+func (this *BWMongo) update(uPtr interface{}, field []string) (num int, err error) {
 	this.setDB()
 	defer this.db.Session.Close()
 
@@ -101,8 +101,25 @@ func (this *BWMongo) Update(uPtr interface{}, field []string) (err error) {
 		nm[f] = m[f]
 	}
 
-	_, err = this.db.C(this.tableMap[getTypeName(uPtr)]).UpdateAll(bson.M(nm), bson.M{"$set": bson.M(m)})
-	return
+	info, err := this.db.C(this.tableMap[getTypeName(uPtr)]).UpdateAll(bson.M(nm), bson.M{"$set": bson.M(m)})
+	return info.Updated, err
+}
+
+func (this *BWMongo) delete(uPtr interface{}, field []string) (num int, err error) {
+	this.setDB()
+	defer this.db.Session.Close()
+
+	m := zReflect.ReflectStructInfo(uPtr)
+
+	nm := make(map[string]interface{})
+
+	for _, f := range field {
+		nm[f] = m[f]
+	}
+
+	info, err := this.db.C(this.tableMap[getTypeName(uPtr)]).RemoveAll(bson.M(nm))
+
+	return info.Removed, err
 }
 
 func (this *BWMongo) DriverInit() (err error) {

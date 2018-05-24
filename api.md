@@ -40,6 +40,13 @@ func GetWidow() *BW
 ```
 GetWidow 获取当前全局Widow. 如果没有则创建
 
+#### func (*BW) Delete
+
+```go
+func (this *BW) Delete(uPtr interface{}, field []string) (num int, err error)
+```
+Delete 删除命中的所有数据 uPtr 供定位记录的数据 field 用于筛选的字段
+
 #### func (*BW) Driver
 
 ```go
@@ -102,7 +109,7 @@ SaveAll 插入一批次的数据 支持数组内存在不同数据类型 u 为�
 #### func (*BW) Update
 
 ```go
-func (this *BW) Update(uPtr interface{}, field []string) (err error)
+func (this *BW) Update(uPtr interface{}, field []string) (num int, err error)
 ```
 Update 更新命中的所有数据. uPtr 供定位记录的数据 field 用于筛选的字段
 
@@ -114,13 +121,7 @@ type BWDriver interface {
 	Check() error
 	DriverInit() error
 	Map(u interface{}, name string)
-	First(uPtr interface{}) error
-	FindOne(uPtr interface{}) error
-	FindAll(uPtr interface{}, aPtr interface{}) error
-	FindAllWithSort(uPtr interface{}, aArray interface{}, sortField []string) error
-	Save(u interface{}) error
-	SaveAll(uArray []interface{}) error
-	Update(uPtr interface{}, field []string) error
+	// contains filtered or unexported methods
 }
 ```
 
@@ -145,50 +146,8 @@ func (this *BWMongo) Check() (err error)
 func (this *BWMongo) DriverInit() (err error)
 ```
 
-#### func (*BWMongo) FindAll
-
-```go
-func (this *BWMongo) FindAll(u interface{}, a interface{}) (err error)
-```
-
-#### func (*BWMongo) FindAllWithSort
-
-```go
-func (this *BWMongo) FindAllWithSort(u interface{}, a interface{}, sortField []string) (err error)
-```
-
-#### func (*BWMongo) FindOne
-
-```go
-func (this *BWMongo) FindOne(u interface{}) (err error)
-```
-
-#### func (*BWMongo) First
-
-```go
-func (this *BWMongo) First(u interface{}) (err error)
-```
-
 #### func (*BWMongo) Map
 
 ```go
 func (this *BWMongo) Map(u interface{}, name string)
-```
-
-#### func (*BWMongo) Save
-
-```go
-func (this *BWMongo) Save(u interface{}) (err error)
-```
-
-#### func (*BWMongo) SaveAll
-
-```go
-func (this *BWMongo) SaveAll(u []interface{}) (err error)
-```
-
-#### func (*BWMongo) Update
-
-```go
-func (this *BWMongo) Update(uPtr interface{}, field []string) (err error)
 ```

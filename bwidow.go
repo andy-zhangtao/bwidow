@@ -28,13 +28,14 @@ type BWDriver interface {
 	Check() error
 	DriverInit() error
 	Map(u interface{}, name string)
-	First(uPtr interface{}) error
-	FindOne(uPtr interface{}) error
-	FindAll(uPtr interface{}, aPtr interface{}) error
-	FindAllWithSort(uPtr interface{}, aArray interface{}, sortField []string) error
-	Save(u interface{}) error
-	SaveAll(uArray []interface{}) error
-	Update(uPtr interface{}, field []string) error
+	first(uPtr interface{}) error
+	findOne(uPtr interface{}) error
+	findAll(uPtr interface{}, aPtr interface{}) error
+	findAllWithSort(uPtr interface{}, aArray interface{}, sortField []string) error
+	save(u interface{}) error
+	saveAll(uArray []interface{}) error
+	update(uPtr interface{}, field []string) (int, error)
+	delete(uPtr interface{}, field []string) (int, error)
 }
 
 type BW struct {
@@ -71,7 +72,7 @@ func (this *BW) Driver(driver int) (err error) {
 //First 查询与u绑定的表中的首条记录
 //u 数据结构体指针
 func (this *BW) First(uPtr interface{}) (err error) {
-	return this.client[this.driver].First(uPtr)
+	return this.client[this.driver].first(uPtr)
 }
 
 //Map 将u与数据表进行绑定
@@ -85,7 +86,7 @@ func (this *BW) Map(u interface{}, name string) {
 //BW会解析u的字段,然后将所有非空字段作为查询条件进行查询，同时将查询到的数据赋值给u
 //u必须为指针
 func (this *BW) FindOne(uPtr interface{}) (err error) {
-	return this.client[this.driver].FindOne(uPtr)
+	return this.client[this.driver].findOne(uPtr)
 }
 
 //FindAll 通过u的字段查询所有数据
@@ -93,7 +94,7 @@ func (this *BW) FindOne(uPtr interface{}) (err error) {
 //u必须为指针
 //a必须为array/slice类型的指针
 func (this *BW) FindAll(uPtr interface{}, aPtr interface{}) (err error) {
-	return this.client[this.driver].FindAll(uPtr, aPtr)
+	return this.client[this.driver].findAll(uPtr, aPtr)
 }
 
 //FindAllWithSort 通过u的字段查询所有数据并且按照给定的条件进行排序
@@ -102,12 +103,12 @@ func (this *BW) FindAll(uPtr interface{}, aPtr interface{}) (err error) {
 //a 必须为array/slice类型的指针
 //sortField 需要排序的字段数组
 func (this *BW) FindAllWithSort(uPtr interface{}, aArray interface{}, sortField []string) (err error) {
-	return this.client[this.driver].FindAllWithSort(uPtr, aArray, sortField)
+	return this.client[this.driver].findAllWithSort(uPtr, aArray, sortField)
 }
 
 //Save 插入单条数据
 func (this *BW) Save(u interface{}) (err error) {
-	return this.client[this.driver].Save(u)
+	return this.client[this.driver].save(u)
 }
 
 //SaveAll 插入一批次的数据
@@ -121,12 +122,19 @@ func (this *BW) SaveAll(uArray interface{}) (err error) {
 		uu = append(uu, value.Index(i).Interface())
 	}
 
-	return this.client[this.driver].SaveAll(uu)
+	return this.client[this.driver].saveAll(uu)
 }
 
 //Update 更新命中的所有数据.
 //uPtr 供定位记录的数据
 //field 用于筛选的字段
-func (this *BW) Update(uPtr interface{}, field []string) (err error) {
-	return this.client[this.driver].Update(uPtr, field)
+func (this *BW) Update(uPtr interface{}, field []string) (num int, err error) {
+	return this.client[this.driver].update(uPtr, field)
+}
+
+//Delete 删除命中的所有数据
+//uPtr 供定位记录的数据
+//field 用于筛选的字段
+func (this *BW) Delete(uPtr interface{}, field []string) (num int, err error) {
+	return this.client[this.driver].delete(uPtr, field)
 }
