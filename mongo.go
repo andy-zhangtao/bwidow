@@ -36,6 +36,8 @@ type BWMongo struct {
 	tableMap map[string]string
 }
 
+var conf *BWMongoConf
+
 func (this *BWMongo) Map(u interface{}, name string) {
 	if this.tableMap == nil {
 		this.tableMap = make(map[string]string)
@@ -45,7 +47,7 @@ func (this *BWMongo) Map(u interface{}, name string) {
 }
 
 func (this *BWMongo) setDB() {
-	this.db = this.session.Clone().DB(os.Getenv(BW_MONGO_DB))
+	this.db = this.session.Clone().DB(conf.DB)
 }
 
 func (this *BWMongo) first(u interface{}) (err error) {
@@ -137,12 +139,13 @@ func (this *BWMongo) DriverInit() (err error) {
 		return
 	}
 
-	user := os.Getenv(BW_MONGO_USER)
-	passwd := os.Getenv(BW_MONGO_PASSWD)
-	db := os.Getenv(BW_MONGO_DB)
-	endpoint := os.Getenv(BW_MONGO_ENDPOINT)
-	var conf BWMongoConf
-	if endpoint == "" {
+	conf = new(BWMongoConf)
+	conf.User = os.Getenv(BW_MONGO_USER)
+	conf.Password = os.Getenv(BW_MONGO_PASSWD)
+	conf.Endpoint = os.Getenv(BW_MONGO_ENDPOINT)
+	conf.DB = os.Getenv(BW_MONGO_DB)
+
+	if conf.Endpoint == "" {
 		useToml := true
 		//	读取toml
 		data, err := ioutil.ReadFile("bwidow_mongo.toml")
@@ -156,42 +159,31 @@ func (this *BWMongo) DriverInit() (err error) {
 		}
 
 		if useToml {
-			err = toml.Unmarshal(data, &conf)
+			err = toml.Unmarshal(data, conf)
 			if err != nil {
 				return err
 			}
 		} else {
-			err = json.Unmarshal(data, &conf)
+			err = json.Unmarshal(data, conf)
 			if err != nil {
 				return err
 			}
 		}
 
-		endpoint = conf.Endpoint
-	}
-
-	if user == "" {
-		user = conf.User
-	}
-	if passwd == "" {
-		passwd = conf.Password
-	}
-	if db == "" {
-		db = conf.DB
 	}
 
 	var session *mgo.Session
-	if user == "" {
-		session, err = mgo.Dial(endpoint)
+	if conf.User == "" {
+		session, err = mgo.Dial(conf.Endpoint)
 		if err != nil {
 			return
 		}
 	} else {
 		dialInfo := &mgo.DialInfo{
-			Addrs:    []string{endpoint},
-			Database: db,
-			Username: user,
-			Password: passwd,
+			Addrs:    []string{conf.Endpoint},
+			Database: conf.DB,
+			Username: conf.User,
+			Password: conf.Password,
 			Timeout:  10 * time.Second,
 		}
 
@@ -243,11 +235,10 @@ func (this *BWMongo) checkIndex(uPtr interface{}) (err error) {
 	}
 
 	index, _ := this.db.C(this.tableMap[getTypeName(uPtr)]).Indexes()
-
 	isExist := false
 	for _, idx := range index {
 		if len(m) == len(idx.Key) {
-			i := 1
+			i := 0
 			for k, _ := range m {
 				for _, n := range idx.Key {
 					if k == n {
@@ -267,7 +258,7 @@ func (this *BWMongo) checkIndex(uPtr interface{}) (err error) {
 			Key:        key,
 			Unique:     true,
 			DropDups:   true,
-			Background: true,
+			Background: false,
 			Sparse:     true,
 		}
 		err = this.db.C(this.tableMap[getTypeName(uPtr)]).EnsureIndex(index)
