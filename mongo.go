@@ -16,8 +16,8 @@ import (
 
 	"github.com/andy-zhangtao/gogather/zReflect"
 	"github.com/pelletier/go-toml"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 )
 
 //Write by zhangtao<ztao8607@gmail.com> . In 2018/5/23.
