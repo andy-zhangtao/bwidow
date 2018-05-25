@@ -41,6 +41,10 @@ import (
 var Widow *BW
 
 const (
+	BW_VERSION = "0.1.0-Alpha"
+)
+
+const (
 	//DRIVER_MONGO Mongo驱动
 	DRIVER_MONGO = iota
 )
@@ -370,4 +374,8 @@ func (this *BW) Delete(uPtr interface{}, field []string) (num int, err error) {
 */
 func (this *BW) CheckIndex(uPtr interface{}) (err error) {
 	return this.client[this.driver].checkIndex(uPtr)
+}
+
+func (this *BW) Version() (string) {
+	return BW_VERSION
 }
