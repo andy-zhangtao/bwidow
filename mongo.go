@@ -134,6 +134,15 @@ func (this *BWMongo) delete(uPtr interface{}, field []string) (num int, err erro
 	return info.Removed, err
 }
 
+func (this *BWMongo) deleteAll(uPtr interface{})(int, error){
+	this.setDB()
+	defer this.db.Session.Close()
+
+	info, err := this.db.C(this.tableMap[getTypeName(uPtr)]).RemoveAll(nil)
+
+	return info.Removed, err
+}
+
 func (this *BWMongo) DriverInit() (err error) {
 	if err = this.Check(); err != nil {
 		return

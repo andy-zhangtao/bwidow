@@ -67,6 +67,7 @@ type BWDriver interface {
 	saveAll(uArray []interface{}) error
 	update(uPtr interface{}, field []string) (int, error)
 	delete(uPtr interface{}, field []string) (int, error)
+	deleteAll(uPtr interface{}) (int, error)
 }
 
 type BW struct {
@@ -331,6 +332,10 @@ func (this *BW) Update(uPtr interface{}, field []string) (num int, err error) {
 */
 func (this *BW) Delete(uPtr interface{}, field []string) (num int, err error) {
 	return this.client[this.driver].delete(uPtr, field)
+}
+
+func (this *BW) DeleteAll(uPtr interface{}) (num int, err error) {
+	return this.client[this.driver].deleteAll(uPtr)
 }
 
 //CheckIndex 检查索引是否存在,如果不存在则创建索引.
