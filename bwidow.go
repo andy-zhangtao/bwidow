@@ -277,7 +277,7 @@ func (this *BW) SaveAll(uArray interface{}) (err error) {
 	value := reflect.ValueOf(uArray)
 
 	var uu []interface{}
-	for i := 0; i < value.Cap(); i++ {
+	for i := 0; i < value.Len(); i++ {
 		uu = append(uu, value.Index(i).Interface())
 	}
 
