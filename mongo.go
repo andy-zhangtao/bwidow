@@ -15,9 +15,9 @@ import (
 	"time"
 
 	"github.com/andy-zhangtao/gogather/zReflect"
-	"github.com/pelletier/go-toml"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
+	"github.com/pelletier/go-toml"
 )
 
 //Write by zhangtao<ztao8607@gmail.com> . In 2018/5/23.
@@ -134,7 +134,7 @@ func (this *BWMongo) delete(uPtr interface{}, field []string) (num int, err erro
 	return info.Removed, err
 }
 
-func (this *BWMongo) deleteAll(uPtr interface{})(int, error){
+func (this *BWMongo) deleteAll(uPtr interface{}) (int, error) {
 	this.setDB()
 	defer this.db.Session.Close()
 
@@ -202,11 +202,12 @@ func (this *BWMongo) DriverInit() (err error) {
 		}
 	}
 
-	_, err = session.BuildInfo()
+	v, err := session.BuildInfo()
 	if err != nil {
 		return
 	}
 
+	fmt.Println(fmt.Sprintf("Mongo Version [%s]", v.Version))
 	this.session = session
 	return
 }
