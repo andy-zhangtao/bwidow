@@ -128,6 +128,13 @@ Driver 设置使用的数据库类型 当前支持的类型为: DRIVER_MONGO - M
 
 ```
 
+#### func (*BW) Error
+
+```go
+func (this *BW) Error() error
+```
+Error 返回当前Error信息
+
 #### func (*BW) FindAll
 
 ```go

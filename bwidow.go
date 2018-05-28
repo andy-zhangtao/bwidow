@@ -396,3 +396,8 @@ func (this *BW) CheckIndex(uPtr interface{}) (*BW) {
 func (this *BW) Version() (string) {
 	return BW_VERSION
 }
+
+//Error 返回当前Error信息
+func (this *BW) Error() (error) {
+	return this.err
+}
