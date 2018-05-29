@@ -41,6 +41,10 @@ import (
 var Widow *BW
 
 const (
+	BW_VERSION = "0.1.0-Alpha"
+)
+
+const (
 	//DRIVER_MONGO Mongo驱动
 	DRIVER_MONGO = iota
 )
@@ -63,11 +67,13 @@ type BWDriver interface {
 	saveAll(uArray []interface{}) error
 	update(uPtr interface{}, field []string) (int, error)
 	delete(uPtr interface{}, field []string) (int, error)
+	deleteAll(uPtr interface{}) (int, error)
 }
 
 type BW struct {
 	driver int
 	client map[int]BWDriver
+	err    error
 }
 
 // GetWidow 获取当前全局Widow. 如果没有则创建
@@ -93,18 +99,21 @@ func GetWidow() (*BW) {
     }
 ```
 */
-func (this *BW) Driver(driver int) (err error) {
+func (this *BW) Driver(driver int) (*BW) {
+	if this.err != nil {
+		return this
+	}
 	switch driver {
 	case DRIVER_MONGO:
 		bm := BWMongo{}
-		if err = bm.DriverInit(); err != nil {
-			return err
+		if err := bm.DriverInit(); err != nil {
+			this.err = err
 		}
 		Widow.driver = DRIVER_MONGO
 		Widow.client[DRIVER_MONGO] = &bm
 	}
 
-	return
+	return this
 }
 
 //First 查询与u绑定的表中的首条记录
@@ -137,8 +146,9 @@ func (this *BW) First(uPtr interface{}) (err error) {
 	bw.Map(User{}, "devex_user_copy")
 ```
 */
-func (this *BW) Map(u interface{}, name string) {
+func (this *BW) Map(u interface{}, name string) (*BW) {
 	this.client[this.driver].Map(u, name)
+	return this
 }
 
 //FindOne 通过u的字段查询数据
@@ -272,7 +282,7 @@ func (this *BW) SaveAll(uArray interface{}) (err error) {
 	value := reflect.ValueOf(uArray)
 
 	var uu []interface{}
-	for i := 0; i < value.Cap(); i++ {
+	for i := 0; i < value.Len(); i++ {
 		uu = append(uu, value.Index(i).Interface())
 	}
 
@@ -329,6 +339,10 @@ func (this *BW) Delete(uPtr interface{}, field []string) (num int, err error) {
 	return this.client[this.driver].delete(uPtr, field)
 }
 
+func (this *BW) DeleteAll(uPtr interface{}) (num int, err error) {
+	return this.client[this.driver].deleteAll(uPtr)
+}
+
 //CheckIndex 检查索引是否存在,如果不存在则创建索引.
 //再调用之前,需要确定Struct中已经添加bw注解
 /*
@@ -368,6 +382,22 @@ func (this *BW) Delete(uPtr interface{}, field []string) (num int, err error) {
 ```
 
 */
-func (this *BW) CheckIndex(uPtr interface{}) (err error) {
-	return this.client[this.driver].checkIndex(uPtr)
+
+func (this *BW) CheckIndex(uPtr interface{}) (*BW) {
+	if this.err != nil {
+		return this
+	}
+	if err := this.client[this.driver].checkIndex(uPtr); err != nil {
+		this.err = err
+	}
+	return this
+}
+
+func (this *BW) Version() (string) {
+	return BW_VERSION
+}
+
+//Error 返回当前Error信息
+func (this *BW) Error() (error) {
+	return this.err
 }

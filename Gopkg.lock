@@ -5,11 +5,11 @@
   branch = "master"
   name = "github.com/andy-zhangtao/gogather"
   packages = ["zReflect"]
-  revision = "80e550f11f4c52518ccfc55b427927144d8b4a29"
+  revision = "bac5ced7d101364ab9e7332744f952c945e0f8e0"
 
 [[projects]]
-  branch = "v2"
-  name = "gopkg.in/mgo.v2"
+  branch = "master"
+  name = "github.com/globalsign/mgo"
   packages = [
     ".",
     "bson",
@@ -17,11 +17,17 @@
     "internal/sasl",
     "internal/scram"
   ]
-  revision = "3f83fa5005286a7fe593b055f0d7771a7dce4655"
+  revision = "efe0945164a7e582241f37ae8983c075f8f2e870"
+
+[[projects]]
+  name = "github.com/pelletier/go-toml"
+  packages = ["."]
+  revision = "acdc4509485b587f5e675510c4f2c63e90ff68a8"
+  version = "v1.1.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "048b9495916cdaf4f29e33bf625c63e02fab9cb0962c7e43f373b4c606676bda"
+  inputs-digest = "d15da4b4d325aad8701310cec3397013707ddf6055af15e020a512f1703a7011"
   solver-name = "gps-cdcl"
   solver-version = 1
