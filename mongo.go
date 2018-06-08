@@ -276,3 +276,10 @@ func (this *BWMongo) checkIndex(uPtr interface{}) (err error) {
 
 	return
 }
+
+func (this *BWMongo) count(uPtr interface{}) (int, error) {
+	this.setDB()
+	defer this.db.Session.Close()
+
+	return this.db.C(this.tableMap[getTypeName(uPtr)]).Count()
+}

@@ -68,6 +68,7 @@ type BWDriver interface {
 	update(uPtr interface{}, field []string) (int, error)
 	delete(uPtr interface{}, field []string) (int, error)
 	deleteAll(uPtr interface{}) (int, error)
+	count(uPtr interface{}) (int, error)
 }
 
 type BW struct {
@@ -400,4 +401,12 @@ func (this *BW) Version() (string) {
 //Error 返回当前Error信息
 func (this *BW) Error() (error) {
 	return this.err
+}
+
+//Count 返回指定数据表当前所有数据量
+/*
+
+*/
+func (this *BW) Count(uPtr interface{}) (int, error) {
+	return this.client[this.driver].count(uPtr)
 }
