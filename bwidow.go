@@ -47,6 +47,8 @@ const (
 const (
 	//DRIVER_MONGO Mongo驱动
 	DRIVER_MONGO = iota
+	//DRIVER_PQ  Postgresql驱动
+	DRIVER_PQ
 )
 
 func init() {
@@ -112,6 +114,14 @@ func (this *BW) Driver(driver int) (*BW) {
 		}
 		Widow.driver = DRIVER_MONGO
 		Widow.client[DRIVER_MONGO] = &bm
+	case DRIVER_PQ:
+		bq := BWPostgresql{}
+		if err := bq.DriverInit(); err != nil {
+			this.err = err
+		}
+
+		Widow.driver = DRIVER_PQ
+		Widow.client[DRIVER_PQ] = &bq
 	}
 
 	return this
