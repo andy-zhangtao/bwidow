@@ -133,33 +133,255 @@ func (this *BWPostgresql) checkIndex(u interface{}) error {
 
 	return err
 }
+
 func (this *BWPostgresql) first(uPtr interface{}) error {
+
+	table := this.tableMap[getTypeName(uPtr)]
+
+	uStruct := zReflect.ReflectStructInfoWithTag(uPtr, true, "pq")
+
+	var columns []string
+
+	for key, _ := range uStruct {
+		columns = append(columns, key)
+	}
+
+	valPtr, err := zReflect.ExtractValuePtrFromStruct(uPtr, columns)
+	if err != nil {
+		return err
+	}
+
+	sql := fmt.Sprintf("SELECT %s FROM %s LIMIT 1", strings.Join(columns, ","), table)
+
+	rows, err := this.db.Query(sql)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Query First Rows Error [%s]", err.Error()))
+	}
+
+	for rows.Next() {
+		err = rows.Scan(valPtr...)
+		if err != nil {
+			return err
+		}
+	}
+
+	rows.Close()
 	return nil
 }
+
 func (this *BWPostgresql) findOne(uPtr interface{}) error {
+	table := this.tableMap[getTypeName(uPtr)]
+	var columns []string
+	var filter []string
+
+	uValues := zReflect.ReflectStructInfoWithTag(uPtr, false, "pq")
+
+	uStruct := zReflect.ReflectStructInfoWithTag(uPtr, true, "pq")
+
+	for key, value := range uValues {
+		filter = append(filter, fmt.Sprintf(" %s='%v'", key, value))
+	}
+
+	for key, _ := range uStruct {
+		columns = append(columns, key)
+	}
+
+	valPtr, err := zReflect.ExtractValuePtrFromStruct(uPtr, columns)
+	if err != nil {
+		return err
+	}
+
+	sql := fmt.Sprintf("SELECT %s FROM %s WHERE %s LIMIT 1", strings.Join(columns, ","), table, strings.Join(filter, " AND "))
+
+	//fmt.Println(sql)
+	rows, err := this.db.Query(sql)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Query Rows Error [%s]", err.Error()))
+	}
+
+	for rows.Next() {
+		err = rows.Scan(valPtr...)
+		if err != nil {
+			return err
+		}
+	}
+
+	rows.Close()
 	return nil
 }
 func (this *BWPostgresql) findAll(uPtr interface{}, aPtr interface{}) error {
+	table := this.tableMap[getTypeName(uPtr)]
+
+	var columns []string
+	var filter []string
+
+	uValues := zReflect.ReflectStructInfoWithTag(uPtr, false, "pq")
+
+	uStruct := zReflect.ReflectStructInfoWithTag(uPtr, true, "pq")
+
+	for key, value := range uValues {
+		filter = append(filter, fmt.Sprintf(" %s='%v'", key, value))
+	}
+
+	for key, _ := range uStruct {
+		columns = append(columns, key)
+	}
+
+	sql := fmt.Sprintf("SELECT %s FROM %s WHERE %s ", strings.Join(columns, ","), table, strings.Join(filter, " AND "))
+
+	//fmt.Println(sql)
+	rows, err := this.db.Query(sql)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Query Rows Error [%s]", err.Error()))
+	}
+
+	valuePtr := reflect.ValueOf(aPtr)
+	arrayValue := valuePtr.Elem()
+
+	for rows.Next() {
+		_valPtr := reflect.New(reflect.TypeOf(uPtr).Elem()).Interface()
+		valPtr, err := zReflect.ExtractValuePtrFromStruct(_valPtr, columns)
+		if err != nil {
+			return err
+		}
+		err = rows.Scan(valPtr...)
+		if err != nil {
+			return err
+		}
+
+		arrayValue.Set(reflect.Append(arrayValue, reflect.ValueOf(_valPtr)))
+	}
+
+	rows.Close()
 	return nil
 }
-func (this *BWPostgresql) findAllWithSort(uPtr interface{}, aArray interface{}, sortField []string) error {
+func (this *BWPostgresql) findAllWithSort(uPtr interface{}, aPtr interface{}, sortField []string) error {
+
+	table := this.tableMap[getTypeName(uPtr)]
+
+	var columns []string
+	var filter []string
+
+	uValues := zReflect.ReflectStructInfoWithTag(uPtr, false, "pq")
+
+	uStruct := zReflect.ReflectStructInfoWithTag(uPtr, true, "pq")
+
+	for key, value := range uValues {
+		filter = append(filter, fmt.Sprintf(" %s='%v'", key, value))
+	}
+
+	for key, _ := range uStruct {
+		columns = append(columns, key)
+	}
+
+	var _sort []string
+	for _, s := range sortField {
+		if strings.HasPrefix(s, "-") {
+			_sort = append(_sort, fmt.Sprintf(" %s DESC", s[1:len(s)]))
+		} else if strings.HasPrefix(s, "+") {
+			_sort = append(_sort, fmt.Sprintf(" %s ASC", s[1:len(s)]))
+		} else {
+			_sort = append(_sort, fmt.Sprintf(" %s ASC", s))
+		}
+	}
+
+	sql := fmt.Sprintf("SELECT %s FROM %s WHERE %s ORDER BY %s ", strings.Join(columns, ","), table, strings.Join(filter, " AND "), strings.Join(_sort, ","))
+
+	//fmt.Println(sql)
+	rows, err := this.db.Query(sql)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Query Rows Error [%s]", err.Error()))
+	}
+
+	valuePtr := reflect.ValueOf(aPtr)
+	arrayValue := valuePtr.Elem()
+
+	for rows.Next() {
+		_valPtr := reflect.New(reflect.TypeOf(uPtr).Elem()).Interface()
+		valPtr, err := zReflect.ExtractValuePtrFromStruct(_valPtr, columns)
+		if err != nil {
+			return err
+		}
+		err = rows.Scan(valPtr...)
+		if err != nil {
+			return err
+		}
+
+		arrayValue.Set(reflect.Append(arrayValue, reflect.ValueOf(_valPtr)))
+	}
+
+	rows.Close()
 	return nil
+
 }
-func (this *BWPostgresql) save(u interface{}) error {
+func (this *BWPostgresql) save(uPtr interface{}) error {
+	table := this.tableMap[getTypeName(uPtr)]
+	var columns []string
+	var value []interface{}
+
+	uValues := zReflect.ReflectStructInfoWithTag(uPtr, false, "pq")
+
+	for key, val := range uValues {
+		columns = append(columns, key)
+		value = append(value, val)
+	}
+
+	var _value string
+
+	for _, v := range value {
+		_value += fmt.Sprintf("'%v',", v)
+	}
+
+	_value = _value[:len(_value)-1]
+	sql := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", table, strings.Join(columns, ","), _value)
+
+	//fmt.Println(sql)
+	_, err := this.db.Exec(sql)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Query Rows Error [%s]", err.Error()))
+	}
+
 	return nil
 }
 func (this *BWPostgresql) saveAll(uArray []interface{}) error {
+	for _, u := range uArray {
+		if err := this.save(u); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 func (this *BWPostgresql) update(uPtr interface{}, field []string) (int, error) {
 	return 0, nil
 }
 func (this *BWPostgresql) delete(uPtr interface{}, field []string) (int, error) {
+	
 	return 0, nil
 }
 func (this *BWPostgresql) deleteAll(uPtr interface{}) (int, error) {
-	return 0, nil
+	table := this.tableMap[getTypeName(uPtr)]
+
+	sql := fmt.Sprintf("DELETE FROM %s ", table)
+	_, err := this.db.Exec(sql)
+
+	return 0, err
 }
 func (this *BWPostgresql) count(uPtr interface{}) (int, error) {
-	return 0, nil
+	var count int
+	table := this.tableMap[getTypeName(uPtr)]
+
+	sql := fmt.Sprintf("SELECT COUNT(*) FROM %s ", table)
+	rows, err := this.db.Query(sql)
+	if err != nil {
+		return count, err
+	}
+
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return count, err
+		}
+	}
+
+	return count, nil
 }

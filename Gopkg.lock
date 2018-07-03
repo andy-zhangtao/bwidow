@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/andy-zhangtao/gogather"
   packages = ["zReflect"]
-  revision = "bac5ced7d101364ab9e7332744f952c945e0f8e0"
+  revision = "7fae1d2588f34a27a891757ad476f2a201e0894e"
 
 [[projects]]
   branch = "master"
@@ -20,6 +20,15 @@
   revision = "efe0945164a7e582241f37ae8983c075f8f2e870"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/lib/pq"
+  packages = [
+    ".",
+    "oid"
+  ]
+  revision = "90697d60dd844d5ef6ff15135d0203f65d2f53b8"
+
+[[projects]]
   name = "github.com/pelletier/go-toml"
   packages = ["."]
   revision = "acdc4509485b587f5e675510c4f2c63e90ff68a8"
@@ -28,6 +37,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d15da4b4d325aad8701310cec3397013707ddf6055af15e020a512f1703a7011"
+  inputs-digest = "ae12df80a5d9e5321ea3e6f94e985d1eac26f24d7b2ddb2040076d372efbf6ee"
   solver-name = "gps-cdcl"
   solver-version = 1
