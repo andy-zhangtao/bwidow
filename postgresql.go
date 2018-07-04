@@ -352,12 +352,81 @@ func (this *BWPostgresql) saveAll(uArray []interface{}) error {
 	return nil
 }
 func (this *BWPostgresql) update(uPtr interface{}, field []string) (int, error) {
-	return 0, nil
+
+	table := this.tableMap[getTypeName(uPtr)]
+	var filters []string
+	var updates []string
+	uStruct := zReflect.ReflectStructInfoWithTag(uPtr, false, "pq")
+
+	if len(field) > 0 {
+		for _, f := range field {
+			if v, ok := uStruct[f]; ok {
+				filters = append(filters, fmt.Sprintf("%s='%v'", f, v))
+			}
+		}
+	} else {
+		for key, value := range uStruct {
+			filters = append(filters, fmt.Sprintf("%s='%v'", key, value))
+		}
+	}
+
+	for key, value := range uStruct {
+		updates = append(updates, fmt.Sprintf("%s='%v'", key, value))
+	}
+
+	if len(filters) == 0 {
+		return 0, errors.New("bw: invalid update filter params")
+	}
+
+	sql := fmt.Sprintf("UPDATE %s SET %s WHERE %s ", table, strings.Join(updates, ","), strings.Join(filters, " AND "))
+	fmt.Println(sql)
+	result, err := this.db.Exec(sql)
+	if err != nil {
+		return 0, err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(rows), nil
 }
+
 func (this *BWPostgresql) delete(uPtr interface{}, field []string) (int, error) {
-	
-	return 0, nil
+	table := this.tableMap[getTypeName(uPtr)]
+	var columns []string
+	uStruct := zReflect.ReflectStructInfoWithTag(uPtr, false, "pq")
+
+	if len(field) > 0 {
+		for _, f := range field {
+			if v, ok := uStruct[f]; ok {
+				columns = append(columns, fmt.Sprintf("%s='%v'", f, v))
+			}
+		}
+	} else {
+		for key, value := range uStruct {
+			columns = append(columns, fmt.Sprintf("%s='%v'", key, value))
+		}
+	}
+
+	if len(columns) == 0 {
+		return 0, errors.New("bw: invalid delete filter params")
+	}
+
+	sql := fmt.Sprintf("DELETE FROM %s WHERE %s ", table, strings.Join(columns, " AND "))
+	fmt.Println(sql)
+	result, err := this.db.Exec(sql)
+	if err != nil {
+		return 0, err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(rows), nil
 }
+
 func (this *BWPostgresql) deleteAll(uPtr interface{}) (int, error) {
 	table := this.tableMap[getTypeName(uPtr)]
 
