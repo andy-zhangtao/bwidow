@@ -227,9 +227,13 @@ func (this *BWPostgresql) findAll(uPtr interface{}, aPtr interface{}) error {
 		columns = append(columns, key)
 	}
 
-	sql := fmt.Sprintf("SELECT %s FROM %s WHERE %s ", strings.Join(columns, ","), table, strings.Join(filter, " AND "))
+	var sql string
+	if len(filter) >0{
+		sql = fmt.Sprintf("SELECT %s FROM %s WHERE %s ", strings.Join(columns, ","), table, strings.Join(filter, " AND "))
+	}else{
+		sql = fmt.Sprintf("SELECT %s FROM %s ", strings.Join(columns, ","), table)
+	}
 
-	//fmt.Println(sql)
 	rows, err := this.db.Query(sql)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Query Rows Error [%s]", err.Error()))
