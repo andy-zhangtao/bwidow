@@ -228,15 +228,15 @@ func (this *BWPostgresql) findAll(uPtr interface{}, aPtr interface{}) error {
 	}
 
 	var sql string
-	if len(filter) >0{
+	if len(filter) > 0 {
 		sql = fmt.Sprintf("SELECT %s FROM %s WHERE %s ", strings.Join(columns, ","), table, strings.Join(filter, " AND "))
-	}else{
+	} else {
 		sql = fmt.Sprintf("SELECT %s FROM %s ", strings.Join(columns, ","), table)
 	}
 
 	rows, err := this.db.Query(sql)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Query Rows Error [%s]", err.Error()))
+		return errors.New(fmt.Sprintf("Query Rows Error [%s] SQL[%s]", err.Error(), sql))
 	}
 
 	valuePtr := reflect.ValueOf(aPtr)
