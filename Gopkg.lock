@@ -3,19 +3,30 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:05222ce00e61760e967287aff6e0de903fb02f2aa08583435168958b7532ca29"
   name = "github.com/andy-zhangtao/gogather"
   packages = ["zReflect"]
-  revision = "7fae1d2588f34a27a891757ad476f2a201e0894e"
+  pruneopts = "UT"
+  revision = "2f90705893fcefbf74156caf71c7c614da2f5cbe"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/globalsign/mgo"
+  digest = "1:95741de3af260a92cc5c7f3f3061e85273f5a81b5db20d4bd68da74bd521675e"
+  name = "github.com/pelletier/go-toml"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c01d1270ff3e442a8a57cddc1c92dc1138598194"
+  version = "v1.2.0"
+
+[[projects]]
+  branch = "v2"
+  digest = "1:988de7520a09024d5d94cd99bd545afbf194893994ec759b1cda0a0bbb6adb80"
+  name = "gopkg.in/mgo.v2"
   packages = [
     ".",
     "bson",
     "internal/json",
     "internal/sasl",
-    "internal/scram"
+    "internal/scram",
   ]
   revision = "efe0945164a7e582241f37ae8983c075f8f2e870"
 
@@ -27,16 +38,17 @@
     "oid"
   ]
   revision = "90697d60dd844d5ef6ff15135d0203f65d2f53b8"
-
-[[projects]]
-  name = "github.com/pelletier/go-toml"
-  packages = ["."]
-  revision = "acdc4509485b587f5e675510c4f2c63e90ff68a8"
-  version = "v1.1.0"
+  pruneopts = "UT"
+  revision = "9856a29383ce1c59f308dd1cf0363a79b5bef6b5"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ae12df80a5d9e5321ea3e6f94e985d1eac26f24d7b2ddb2040076d372efbf6ee"
+  input-imports = [
+    "github.com/andy-zhangtao/gogather/zReflect",
+    "github.com/pelletier/go-toml",
+    "gopkg.in/mgo.v2",
+    "gopkg.in/mgo.v2/bson",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
