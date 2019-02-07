@@ -99,7 +99,7 @@ func (this *BWPostgresql) DriverInit() error {
 		return err
 	}
 
-	if db.Ping() != nil {
+	if err := db.Ping(); err != nil {
 		return errors.New(fmt.Sprintf("Ping [%s] Error [%s]", connStr, err))
 	}
 
@@ -117,6 +117,7 @@ func (this *BWPostgresql) Map(u interface{}, name string) {
 	this.tableMap[reflect.TypeOf(u).Name()] = name
 	return
 }
+
 func (this *BWPostgresql) checkIndex(u interface{}) error {
 	m := zReflect.ReflectStructInfoWithTag(u, true, "bw")
 
@@ -289,7 +290,12 @@ func (this *BWPostgresql) findAllWithSort(uPtr interface{}, aPtr interface{}, so
 		}
 	}
 
-	sql := fmt.Sprintf("SELECT %s FROM %s WHERE %s ORDER BY %s ", strings.Join(columns, ","), table, strings.Join(filter, " AND "), strings.Join(_sort, ","))
+	var sql string
+	if len(filter) > 0 {
+		sql = fmt.Sprintf("SELECT %s FROM %s WHERE %s ORDER BY %s ", strings.Join(columns, ","), table, strings.Join(filter, " AND "), strings.Join(_sort, ","))
+	} else {
+		sql = fmt.Sprintf("SELECT %s FROM %s ORDER BY %s ", strings.Join(columns, ","), table, strings.Join(_sort, ","))
+	}
 
 	//fmt.Println(sql)
 	rows, err := this.db.Query(sql)
@@ -342,7 +348,7 @@ func (this *BWPostgresql) save(uPtr interface{}) error {
 	//fmt.Println(sql)
 	_, err := this.db.Exec(sql)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Query Rows Error [%s]", err.Error()))
+		return errors.New(fmt.Sprintf("Insert Row Error [%s]", err.Error()))
 	}
 
 	return nil
