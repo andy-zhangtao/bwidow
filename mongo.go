@@ -57,13 +57,23 @@ func (this *BWMongo) first(u interface{}) (err error) {
 	return this.db.C(this.tableMap[getTypeName(u)]).Find(nil).One(u)
 }
 
-func (this *BWMongo) findOne(u interface{}) (err error) {
+func (this *BWMongo) findOne(u interface{}, fields ...string) (err error) {
 	this.setDB()
 	defer this.db.Session.Close()
 
 	m := zReflect.ReflectStructInfo(u)
 
-	return this.db.C(this.tableMap[getTypeName(u)]).Find(bson.M(m)).One(u)
+	uStruct := make(map[string]interface{})
+
+	if len(fields) == 0 {
+		uStruct = m
+	} else {
+		for _, f := range fields {
+			uStruct[f] = m[f]
+		}
+	}
+
+	return this.db.C(this.tableMap[getTypeName(u)]).Find(bson.M(uStruct)).One(u)
 }
 
 func (this *BWMongo) findAll(u interface{}, a interface{}) (err error) {

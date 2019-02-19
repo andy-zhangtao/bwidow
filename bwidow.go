@@ -62,7 +62,7 @@ type BWDriver interface {
 	Map(u interface{}, name string)
 	checkIndex(u interface{}) error
 	first(uPtr interface{}) error
-	findOne(uPtr interface{}) error
+	findOne(uPtr interface{}, fields ...string) error
 	findAll(uPtr interface{}, aPtr interface{}) error
 	findAllWithSort(uPtr interface{}, aArray interface{}, sortField []string) error
 	save(u interface{}) error
@@ -416,7 +416,7 @@ func (this *BW) Error() (error) {
 //Count 返回指定数据表当前所有数据量
 /*
 
-*/
+ */
 func (this *BW) Count(uPtr interface{}) (int, error) {
 	return this.client[this.driver].count(uPtr)
 }

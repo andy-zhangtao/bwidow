@@ -170,14 +170,24 @@ func (this *BWPostgresql) first(uPtr interface{}) error {
 	return nil
 }
 
-func (this *BWPostgresql) findOne(uPtr interface{}) error {
+func (this *BWPostgresql) findOne(uPtr interface{}, fields ...string) error {
 	table := this.tableMap[getTypeName(uPtr)]
 	var columns []string
 	var filter []string
 
 	uValues := zReflect.ReflectStructInfoWithTag(uPtr, false, "pq")
 
-	uStruct := zReflect.ReflectStructInfoWithTag(uPtr, true, "pq")
+	_uStruct := zReflect.ReflectStructInfoWithTag(uPtr, true, "pq")
+
+	uStruct := make(map[string]interface{})
+
+	if len(fields) == 0 {
+		uStruct = _uStruct
+	} else {
+		for _, f := range fields {
+			uStruct[f] = _uStruct[f]
+		}
+	}
 
 	for key, value := range uValues {
 		filter = append(filter, fmt.Sprintf(" %s='%v'", key, value))
