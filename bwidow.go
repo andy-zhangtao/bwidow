@@ -181,8 +181,8 @@ func (this *BW) Map(u interface{}, name string) (*BW) {
 	}
 ```
 */
-func (this *BW) FindOne(uPtr interface{}) (err error) {
-	return this.client[this.driver].findOne(uPtr)
+func (this *BW) FindOne(uPtr interface{}, fields ...string) (err error) {
+	return this.client[this.driver].findOne(uPtr, fields...)
 }
 
 //FindAll 通过u的字段查询所有数据
