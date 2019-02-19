@@ -63,8 +63,8 @@ type BWDriver interface {
 	checkIndex(u interface{}) error
 	first(uPtr interface{}) error
 	findOne(uPtr interface{}, fields ...string) error
-	findAll(uPtr interface{}, aPtr interface{}) error
-	findAllWithSort(uPtr interface{}, aArray interface{}, sortField []string) error
+	findAll(uPtr interface{}, aPtr interface{}, fields ...string) error
+	findAllWithSort(uPtr interface{}, aArray interface{}, sortField []string, fields ...string) error
 	save(u interface{}) error
 	saveAll(uArray []interface{}) error
 	update(uPtr interface{}, field []string) (int, error)
@@ -209,8 +209,8 @@ func (this *BW) FindOne(uPtr interface{}, fields ...string) (err error) {
 ```
 
 */
-func (this *BW) FindAll(u interface{}, aPtr interface{}) (err error) {
-	return this.client[this.driver].findAll(u, aPtr)
+func (this *BW) FindAll(u interface{}, aPtr interface{}, fields ...string) (err error) {
+	return this.client[this.driver].findAll(u, aPtr, fields...)
 }
 
 //FindAllWithSort 通过u的字段查询所有数据并且按照给定的条件进行排序
@@ -235,8 +235,8 @@ func (this *BW) FindAll(u interface{}, aPtr interface{}) (err error) {
 	logrus.WithFields(logrus.Fields{"FindAllWithSort": allUser}).Info(ModuleName)
 ```
 */
-func (this *BW) FindAllWithSort(uPtr interface{}, aArray interface{}, sortField []string) (err error) {
-	return this.client[this.driver].findAllWithSort(uPtr, aArray, sortField)
+func (this *BW) FindAllWithSort(uPtr interface{}, aArray interface{}, sortField []string, fields ...string) (err error) {
+	return this.client[this.driver].findAllWithSort(uPtr, aArray, sortField, fields...)
 }
 
 //Save 插入单条数据

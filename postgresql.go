@@ -220,7 +220,7 @@ func (this *BWPostgresql) findOne(uPtr interface{}, fields ...string) error {
 	rows.Close()
 	return nil
 }
-func (this *BWPostgresql) findAll(uPtr interface{}, aPtr interface{}) error {
+func (this *BWPostgresql) findAll(uPtr interface{}, aPtr interface{}, fields ...string) error {
 	table := this.tableMap[getTypeName(uPtr)]
 
 	var columns []string
@@ -232,6 +232,12 @@ func (this *BWPostgresql) findAll(uPtr interface{}, aPtr interface{}) error {
 
 	for key, value := range uValues {
 		filter = append(filter, fmt.Sprintf(" %s='%v'", key, value))
+	}
+
+	if len(fields) > 0 {
+		for _, f := range fields {
+			delete(uStruct, f)
+		}
 	}
 
 	for key, _ := range uStruct {
@@ -270,7 +276,7 @@ func (this *BWPostgresql) findAll(uPtr interface{}, aPtr interface{}) error {
 	rows.Close()
 	return nil
 }
-func (this *BWPostgresql) findAllWithSort(uPtr interface{}, aPtr interface{}, sortField []string) error {
+func (this *BWPostgresql) findAllWithSort(uPtr interface{}, aPtr interface{}, sortField []string, fields ...string) error {
 
 	table := this.tableMap[getTypeName(uPtr)]
 
@@ -280,6 +286,12 @@ func (this *BWPostgresql) findAllWithSort(uPtr interface{}, aPtr interface{}, so
 	uValues := zReflect.ReflectStructInfoWithTag(uPtr, false, "pq")
 
 	uStruct := zReflect.ReflectStructInfoWithTag(uPtr, true, "pq")
+
+	if len(fields) > 0 {
+		for _, f := range fields {
+			delete(uStruct, f)
+		}
+	}
 
 	for key, value := range uValues {
 		filter = append(filter, fmt.Sprintf(" %s='%v'", key, value))
