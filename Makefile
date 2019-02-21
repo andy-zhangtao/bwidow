@@ -1,4 +1,4 @@
-.PHONY: build
+.PHONY: test
 name = bwidow
 
 test: *.go *.md
